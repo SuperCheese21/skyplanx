@@ -79,14 +79,18 @@ function generateFile() {
 	}
 
 	xml += "</FlightPlan.FlightPlan>\n</SimBase.Document>\n";
-	
-	console.log(xml);
 
 	var e = document.createElement('a');
 	e.href = 'data:attachment/text,' + encodeURI(xml);
 	e.target = '_blank';
 	e.download = title + ".pln";
-	e.click();
+	
+	var click = new MouseEvent("click", {
+		"view": window,
+		"bubbles": true,
+		"cancelable": false
+	});
+	e.dispatchEvent(click);
 }
 
 function convertCrz(fl) {
