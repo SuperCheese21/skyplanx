@@ -79,6 +79,8 @@ function generateFile() {
 	}
 
 	xml += "</FlightPlan.FlightPlan>\n</SimBase.Document>\n";
+	
+	console.log(xml);
 
 	var e = document.createElement('a');
 	e.href = 'data:attachment/text,' + encodeURI(xml);
