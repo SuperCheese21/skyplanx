@@ -125,6 +125,11 @@ function convertPoint(point, type) {
 	var ds = 60*(dm - m);
 	var s = (Math.round(100 * ds) / 100);
 	
+	if (d == 180) {
+		d = 179;
+		m = 59;
+		s = 59.99;
+	}
 	if (s == 60) {
 		s = "0";
 		m++;
