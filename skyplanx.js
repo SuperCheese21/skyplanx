@@ -1,16 +1,3 @@
-// ==UserScript==
-// @name SkyPlanX
-// @description This extension (by Ethan Shields) allows you to export routes to a .PLN file which can be used with FSX.
-// @match https://www.skyvector.com/*
-// @match https://skyvector.com/*
-// @run-at document-end
-// @version 0.1.0
-// @grant none
-// ==/UserScript==
- 
-// Copyright (c) 2015 Ethan Shields.  All Rights Reserved.
-console.log("Copyright (c) 2015 Ethan Shields.  All Rights Reserved.");
-
 window.addEventListener('load', function() {
 	var button = document.createElement("li");
 	var text = document.createTextNode("Export Flight Plan");
@@ -23,7 +10,7 @@ window.addEventListener('load', function() {
 
 function generateFile() {
 	var FPL = SkyVector.data.FPL;
-	 
+
 	var cruisingAlt = FPL.alt;
 	var departureID = FPL.dep.aptid;
 	var departureLLA = convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
@@ -84,7 +71,7 @@ function generateFile() {
 	e.href = 'data:attachment/text,' + encodeURI(xml);
 	e.target = '_blank';
 	e.download = title + ".pln";
-	
+
 	var click = new MouseEvent("click", {
 		"view": window,
 		"bubbles": true,
@@ -116,7 +103,7 @@ function convertPoint(point, type) {
 		if (point >= 0) h = "N";
 		else h = "S";
 	}
-	
+
 	if (point < 0) point = Math.abs(point);
 	var dd = point;
 	var d = Math.floor(dd);
@@ -124,7 +111,7 @@ function convertPoint(point, type) {
 	var m = Math.floor(dm);
 	var ds = 60*(dm - m);
 	var s = (Math.round(100 * ds) / 100);
-	
+
 	if (d == 180) {
 		d = 179;
 		m = 59;
@@ -138,9 +125,9 @@ function convertPoint(point, type) {
 		m = 0;
 		d++;
 	}
-	
+
 	if (d < 0) d = Math.abs(d);
-	
+
 	var a = h + d + "° " + m + "' " + s + "\"";
 	return a;
 }
@@ -148,7 +135,7 @@ function convertPoint(point, type) {
 function convertAlt(alt) {
 	if (typeof alt == "number") alt += "";
 	var a;
-	
+
 	if (Number(alt) >= 0) a = "+";
 	else a = "-";
 	var s = alt.split(".");
@@ -194,4 +181,3 @@ function checkWaypoint(wpt) {
 	else type = "Intersection";
 	return type;
 }
-
