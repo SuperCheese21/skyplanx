@@ -1,24 +1,30 @@
 // Ensures content runs after page is loaded
-/*window.addEventListener('load', function() {
-	appendButton();
-}, false);*/
+var timer = setInterval(function() {
+    var target = document.getElementsByClassName("svfpl_toolbar")[0];
+    if (target) {
+        appendButton();
+        clearInterval(timer);
+    }
+}, 100);
 
 // Adds button to toolbar
-//function appendButton() {
+var appendButton = function() {
 	var toolbarIcon = document.createElement("a");
 	toolbarIcon.className = "svfpl_iconlinkbtn";
 	toolbarIcon.title = "Export to Flight Sim";
-	toolbarIcon.onclick = generatePLN();
+	toolbarIcon.onclick = generatePLN;
+
 	var icon = document.createElement("span");
 	icon.className = "fa fa-plane";
 	toolbarIcon.appendChild(icon);
+
 	var target = document.getElementsByClassName("svfpl_toolbar")[0];
 	target.childNodes[4].style.margin = "0px 0px 0px 111px";
 	target.insertBefore(toolbarIcon, target.childNodes[4]);
-//}
+};
 
 // Builds and exports a PLN file for FSX
-function generatePLN() {
+var generatePLN = function() {
 	var FPL = SkyVector.data.FPL;
 
 	var cruisingAlt = FPL.alt ? convertCrz(cruisingAlt) : "35000";
@@ -54,7 +60,7 @@ function generatePLN() {
 		if (FPL.route[i].route && FPL.route[i].route.length) {
 			var list = FPL.route[i].route;
 			for (var j=0; j<list.length; j++) {
-				if (j == 0 && list[0].ident == rte[rte.length-1][0]) j++;
+				if (j === 0 && list[0].ident == rte[rte.length-1][0]) j++;
 				rte.push([list[j].ident, list[j].lat, list[j].lon]);
 			}
 		} else {
@@ -81,7 +87,7 @@ function generatePLN() {
 		"cancelable": false
 	});
 	e.dispatchEvent(click);
-}
+};
 
 // Converts flight level to altitude in feet
 function convertCrz(fl) {
