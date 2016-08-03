@@ -1,11 +1,14 @@
+// Ensures content runs after page is loaded
 /*window.addEventListener('load', function() {
 	appendButton();
 }, false);*/
 
+// Adds button to toolbar
 //function appendButton() {
 	var toolbarIcon = document.createElement("a");
 	toolbarIcon.className = "svfpl_iconlinkbtn";
 	toolbarIcon.title = "Export to Flight Sim";
+	toolbarIcon.onclick = generatePLN();
 	var icon = document.createElement("span");
 	icon.className = "fa fa-plane";
 	toolbarIcon.appendChild(icon);
@@ -20,14 +23,12 @@ function generatePLN() {
 
 	var cruisingAlt = FPL.alt ? convertCrz(cruisingAlt) : "35000";
 	var departureID = FPL.dep.aptid;
-	var departureLLA = convertCoords(FPL.dep);
+	var departureLLA = convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
 	var destinationID = FPL.dst.aptid;
 	var destinationLLA = convertCoords(FPL.dst.lat, FPL.dst.lon, FPL.dst.elev);
 	var title = departureID + " to " + destinationID;
 	var descr = title + " - route created by SkyVector and SkyPlanX";
-	var departurePosition;
-	if (FPL.dep.rwy) departurePosition = convertRwy(FPL.dep.rwy);
-	else departurePosition = "";
+	var departurePosition = FPL.dep.rwy ? convertRwy(FPL.dep.rwy) : "";
 	var departureName = FPL.dep.name;
 	var destinationName = FPL.dst.name;
 	var appVersionMajor = "10";
@@ -118,33 +119,30 @@ function convertPoint(point, type) {
 	var ds = 60*(dm - m);
 	var s = (Math.round(100 * ds) / 100);
 
-	if (d == 180) {
-		d = 179;
-		m = 59;
-		s = 59.99;
-	}
 	if (s == 60) {
-		s = "0";
+		s = 0;
 		m++;
 	}
 	if (m == 60) {
 		m = 0;
 		d++;
 	}
+	if (d == 180) {
+		d = 179;
+		m = 59;
+		s = 59.99;
+	}
 
 	if (d < 0) d = Math.abs(d);
-
 	var a = h + d + "° " + m + "' " + s + "\"";
+
 	return a;
 }
 
 // Converts an elevation value to the format used in the PLN file
-function convertAlt(alt) {
+function convertElev(alt) {
 	if (typeof alt == "number") alt += "";
-	var a;
-
-	if (Number(alt) >= 0) a = "+";
-	else a = "-";
+	var a = Number(alt) >= 0 ? "+" : "-";
 	var s = alt.split(".");
 	var n = s[0];
 	var d = s[1];
@@ -152,14 +150,16 @@ function convertAlt(alt) {
 		a += "0";
 	}
 	a += (n + "." + d + "0");
+
 	return a;
 }
 
 // Converts a set of coordinates to PLN format
-function convertCoords(point) {
-	lat = convertPoint(point[0], 0);
-	lon = convertPoint(point[1], 1);
-	elev = convertAlt(point[2]);
+function convertCoords(lat, lon, elev) {
+	lat = convertPoint(lat, 0);
+	lon = convertPoint(lon, 1);
+	elev = convertElev(elev);
+
 	return lat + "," + lon + "," + elev;
 }
 
@@ -171,23 +171,24 @@ function createTag(name, content) {
 // Creates waypoint tag
 function createWaypoint(a) {
 	var name = a[0];
-	var type = checkWaypoint(name);
-	var elev;
-	if (a[3]) elev = a[3];
-	else elev = "0.0";
+	var type = getType(name);
+	var elev = a[3] || "0.0";
 	var position = convertCoords(a[1], a[2], elev);
 	var wpt = "<ATCWaypoint id=\"" + name + "\">\n";
+
 	wpt += createTag("ATCWaypointType", type);
 	wpt += (createTag("WorldPosition", position) + "<ICAO>\n");
 	wpt += (createTag("ICAOIdent", name) + "</ICAO>\n</ATCWaypoint>\n\n");
+
 	return wpt;
 }
 
-function checkWaypoint(wpt) {
+function getType(wpt) {
 	var type;
 	var l = wpt.length;
 	if (l <= 3) type = "VOR";
 	else if (l == 4) type = "Airport";
 	else type = "Intersection";
+
 	return type;
 }
