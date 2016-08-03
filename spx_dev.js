@@ -29,7 +29,7 @@ spx.appendButton = function() {
 spx.generatePLN = function() {
 	var FPL = SkyVector.data.FPL;
 
-	var cruisingAlt = FPL.alt ? this.lib.convertCrz(cruisingAlt) : "35000";
+	var cruisingAlt = FPL.alt ? this.lib.convertCrz(FPL.alt) : "35000";
 	var departureID = FPL.dep.aptid;
 	var departureLLA = this.lib.convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
 	var destinationID = FPL.dst.aptid;
