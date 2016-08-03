@@ -11,4 +11,4 @@ Simply drag the user.js file into a browser window.  Your userscript manager sho
 
 When you load SkyVector, a link will appear on the top toolbar saying "Export Flight Plan".  Once you have created your route, you can export the .pln file onto your computer.  To load it into FSX, navigate to "Flight Planner" and then "Load..." to select the file.
 
-SkyPlanX has been tested only in FSX Steam Edition 10.0.61472
+SkyPlanX has been tested only in FSX Steam Edition, but may also work with FSX Classic and P3D.
