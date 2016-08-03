@@ -94,7 +94,7 @@ function convertCrz(fl) {
 
 // Removes preceding letters in runway name
 function convertRwy(rwy) {
-	rwy.replace("RW", "");
+	rwy = rwy.replace("RW", "");
 	return rwy;
 }
 
