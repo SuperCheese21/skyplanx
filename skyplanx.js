@@ -14,16 +14,17 @@
 	target.insertBefore(toolbarIcon, target.childNodes[4]);
 //}
 
-function generateFile() {
+// Builds and exports a PLN file for FSX
+function generatePLN() {
 	var FPL = SkyVector.data.FPL;
 
-	var cruisingAlt = FPL.alt;
+	var cruisingAlt = FPL.alt ? convertCrz(cruisingAlt) : "35000";
 	var departureID = FPL.dep.aptid;
-	var departureLLA = convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
+	var departureLLA = convertCoords(FPL.dep);
 	var destinationID = FPL.dst.aptid;
 	var destinationLLA = convertCoords(FPL.dst.lat, FPL.dst.lon, FPL.dst.elev);
 	var title = departureID + " to " + destinationID;
-	var descr = title + " created by SkyVector and SkyPlanX";
+	var descr = title + " - route created by SkyVector and SkyPlanX";
 	var departurePosition;
 	if (FPL.dep.rwy) departurePosition = convertRwy(FPL.dep.rwy);
 	else departurePosition = "";
@@ -31,11 +32,6 @@ function generateFile() {
 	var destinationName = FPL.dst.name;
 	var appVersionMajor = "10";
 	var appVersionBuild = "61472";
-
-	if (cruisingAlt) {
-		cruisingAlt = convertCrz(cruisingAlt);
-	} else cruisingAlt = "35000";
-
 
 	var header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n<SimBase.Document Type=\"AceXML\" version=\"1,0\">\n<Descr>AceXML Document</Descr>\n<FlightPlan.FlightPlan>\n";
 
@@ -86,19 +82,23 @@ function generateFile() {
 	e.dispatchEvent(click);
 }
 
+// Converts flight level to altitude in feet
 function convertCrz(fl) {
 	if (fl.indexOf("FL") > -1) {
-		fl = fl.split("L")[1];
-		fl += "00";
-		return fl;
+		fl.replace("FL", "");
+		var alt = fl + "00";
+		return alt;
 	}
 }
 
+// Removes preceding letters in runway name
 function convertRwy(rwy) {
 	rwy.replace("RW", "");
 	return rwy;
 }
 
+/* Converts raw coordinates to format used in PLN file
+   type: 0 - lon, 1 - lat */
 function convertPoint(point, type) {
 	if (typeof point == "string") point = Number(point);
 	var h;
@@ -138,6 +138,7 @@ function convertPoint(point, type) {
 	return a;
 }
 
+// Converts an elevation value to the format used in the PLN file
 function convertAlt(alt) {
 	if (typeof alt == "number") alt += "";
 	var a;
@@ -154,17 +155,20 @@ function convertAlt(alt) {
 	return a;
 }
 
-function convertCoords(lat, lon, elev) {
-	lat = convertPoint(lat, 0);
-	lon = convertPoint(lon, 1);
-	elev = convertAlt(elev);
+// Converts a set of coordinates to PLN format
+function convertCoords(point) {
+	lat = convertPoint(point[0], 0);
+	lon = convertPoint(point[1], 1);
+	elev = convertAlt(point[2]);
 	return lat + "," + lon + "," + elev;
 }
 
+// Creates an XML tag
 function createTag(name, content) {
 	return "<" + name + ">" + content +  "</" + name + ">\n";
 }
 
+// Creates waypoint tag
 function createWaypoint(a) {
 	var name = a[0];
 	var type = checkWaypoint(name);
