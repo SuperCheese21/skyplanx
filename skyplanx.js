@@ -1,12 +1,18 @@
-window.addEventListener('load', function() {
-	var button = document.createElement("li");
-	var text = document.createTextNode("Export Flight Plan");
-	button.appendChild(text);
-	button.onclick = generateFile;
-	button.setAttribute("class", "ul");
-	var target = document.getElementById('sv_topbarul');
-	target.insertBefore(button, target.childNodes[3]);
-}, false);
+/*window.addEventListener('load', function() {
+	appendButton();
+}, false);*/
+
+//function appendButton() {
+	var toolbarIcon = document.createElement("a");
+	toolbarIcon.className = "svfpl_iconlinkbtn";
+	toolbarIcon.title = "Export to Flight Sim";
+	var icon = document.createElement("span");
+	icon.className = "fa fa-plane";
+	toolbarIcon.appendChild(icon);
+	var target = document.getElementsByClassName("svfpl_toolbar")[0];
+	target.childNodes[4].style.margin = "0px 0px 0px 111px";
+	target.insertBefore(toolbarIcon, target.childNodes[4]);
+//}
 
 function generateFile() {
 	var FPL = SkyVector.data.FPL;
