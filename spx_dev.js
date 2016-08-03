@@ -1,18 +1,20 @@
+window.spx = {};
+
 // Ensures content runs after page is loaded
-var timer = setInterval(function() {
+spx.timer = setInterval(function() {
     var target = document.getElementsByClassName("svfpl_toolbar")[0];
     if (target) {
-        appendButton();
-        clearInterval(timer);
+        this.appendButton();
+        clearInterval(this.timer);
     }
 }, 100);
 
 // Adds button to toolbar
-var appendButton = function() {
+spx.appendButton = function() {
 	var toolbarIcon = document.createElement("a");
 	toolbarIcon.className = "svfpl_iconlinkbtn";
 	toolbarIcon.title = "Export to Flight Sim";
-	toolbarIcon.onclick = generatePLN;
+	toolbarIcon.onclick = spx.generatePLN;
 
 	var icon = document.createElement("span");
 	icon.className = "fa fa-plane";
@@ -24,17 +26,17 @@ var appendButton = function() {
 };
 
 // Builds and exports a PLN file for FSX
-var generatePLN = function() {
+spx.generatePLN = function() {
 	var FPL = SkyVector.data.FPL;
 
-	var cruisingAlt = FPL.alt ? convertCrz(cruisingAlt) : "35000";
+	var cruisingAlt = FPL.alt ? this.lib.convertCrz(cruisingAlt) : "35000";
 	var departureID = FPL.dep.aptid;
-	var departureLLA = convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
+	var departureLLA = this.lib.convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
 	var destinationID = FPL.dst.aptid;
-	var destinationLLA = convertCoords(FPL.dst.lat, FPL.dst.lon, FPL.dst.elev);
+	var destinationLLA = this.lib.convertCoords(FPL.dst.lat, FPL.dst.lon, FPL.dst.elev);
 	var title = departureID + " to " + destinationID;
 	var descr = title + " - route created by SkyVector and SkyPlanX";
-	var departurePosition = FPL.dep.rwy ? convertRwy(FPL.dep.rwy) : "";
+	var departurePosition = FPL.dep.rwy ? this.lib.convertRwy(FPL.dep.rwy) : "";
 	var departureName = FPL.dep.name;
 	var destinationName = FPL.dst.name;
 	var appVersionMajor = "10";
@@ -49,7 +51,7 @@ var generatePLN = function() {
 	var values = [title, "IFR", "HighAlt", cruisingAlt, departureID, departureLLA, destinationID, destinationLLA, descr, departurePosition, departureName, destinationName];
 
 	for (var i=0; i<tags.length; i++) {
-		xml += createTag(tags[i], values[i]);
+		xml += this.xml.createTag(tags[i], values[i]);
 	}
 
 	xml += "<AppVersion>\n<AppVersionMajor>10</AppVersionMajor>\n<AppVersionBuild>61472</AppVersionBuild>\n</AppVersion>\n\n";
@@ -71,7 +73,7 @@ var generatePLN = function() {
 	rte.push([FPL.route[FPL.route.length-1].ident, FPL.route[FPL.route.length-1].lat, FPL.route[FPL.route.length-1].lon, FPL.route[FPL.route.length-1].elev]);
 
 	for (var i=0; i<rte.length; i++) {
-		xml += createWaypoint(rte[i]);
+		xml += this.xml.createWaypoint(rte[i]);
 	}
 
 	xml += "</FlightPlan.FlightPlan>\n</SimBase.Document>\n";
@@ -89,8 +91,10 @@ var generatePLN = function() {
 	e.dispatchEvent(click);
 };
 
+spx.lib = {};
+
 // Converts flight level to altitude in feet
-function convertCrz(fl) {
+spx.lib.convertCrz = function(fl) {
 	if (fl.indexOf("FL") > -1) {
 		fl.replace("FL", "");
 		var alt = fl + "00";
@@ -99,14 +103,14 @@ function convertCrz(fl) {
 }
 
 // Removes preceding letters in runway name
-function convertRwy(rwy) {
+spx.lib.convertRwy = function(rwy) {
 	rwy = rwy.replace("RW", "");
 	return rwy;
 }
 
 /* Converts raw coordinates to format used in PLN file
    type: 0 - lon, 1 - lat */
-function convertPoint(point, type) {
+spx.lib.convertPoint = function(point, type) {
 	if (typeof point == "string") point = Number(point);
 	var h;
 	if (type) {
@@ -146,7 +150,7 @@ function convertPoint(point, type) {
 }
 
 // Converts an elevation value to the format used in the PLN file
-function convertElev(alt) {
+spx.lib.convertElev = function(alt) {
 	if (typeof alt == "number") alt += "";
 	var a = Number(alt) >= 0 ? "+" : "-";
 	var s = alt.split(".");
@@ -161,35 +165,15 @@ function convertElev(alt) {
 }
 
 // Converts a set of coordinates to PLN format
-function convertCoords(lat, lon, elev) {
-	lat = convertPoint(lat, 0);
-	lon = convertPoint(lon, 1);
-	elev = convertElev(elev);
+spx.lib.convertCoords = function(lat, lon, elev) {
+	lat = this.convertPoint(lat, 0);
+	lon = this.convertPoint(lon, 1);
+	elev = this.convertElev(elev);
 
 	return lat + "," + lon + "," + elev;
 }
 
-// Creates an XML tag
-function createTag(name, content) {
-	return "<" + name + ">" + content +  "</" + name + ">\n";
-}
-
-// Creates waypoint tag
-function createWaypoint(a) {
-	var name = a[0];
-	var type = getType(name);
-	var elev = a[3] || "0.0";
-	var position = convertCoords(a[1], a[2], elev);
-	var wpt = "<ATCWaypoint id=\"" + name + "\">\n";
-
-	wpt += createTag("ATCWaypointType", type);
-	wpt += (createTag("WorldPosition", position) + "<ICAO>\n");
-	wpt += (createTag("ICAOIdent", name) + "</ICAO>\n</ATCWaypoint>\n\n");
-
-	return wpt;
-}
-
-function getType(wpt) {
+spx.lib.getType = function(wpt) {
 	var type;
 	var l = wpt.length;
 	if (l <= 3) type = "VOR";
@@ -197,4 +181,26 @@ function getType(wpt) {
 	else type = "Intersection";
 
 	return type;
+}
+
+spx.xml = {};
+
+// Creates an XML tag
+spx.xml.createTag = function(name, content) {
+	return "<" + name + ">" + content +  "</" + name + ">\n";
+}
+
+// Creates waypoint tag
+spx.xml.createWaypoint = function(a) {
+	var name = a[0];
+	var type = spx.lib.getType(name);
+	var elev = a[3] || "0.0";
+	var position = spx.lib.convertCoords(a[1], a[2], elev);
+	var wpt = "<ATCWaypoint id=\"" + name + "\">\n";
+
+	wpt += this.createTag("ATCWaypointType", type);
+	wpt += (this.createTag("WorldPosition", position) + "<ICAO>\n");
+	wpt += (this.createTag("ICAOIdent", name) + "</ICAO>\n</ATCWaypoint>\n\n");
+
+	return wpt;
 }
