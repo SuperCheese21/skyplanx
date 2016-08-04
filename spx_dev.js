@@ -4,9 +4,8 @@ window.spx = {};
 spx.timer = setInterval(function() {
     var target = document.getElementsByClassName("svfpl_toolbar")[0];
     if (target) {
-        console.log(this);
-        this.appendButton();
-        clearInterval(this.timer);
+        spx.appendButton();
+        clearInterval(spx.timer);
     }
 }, 100);
 
@@ -30,14 +29,14 @@ spx.appendButton = function() {
 spx.generatePLN = function() {
 	var FPL = SkyVector.data.FPL;
 
-	var cruisingAlt = FPL.alt ? this.lib.convertCrz(FPL.alt) : "35000";
+	var cruisingAlt = FPL.alt ? spx.lib.convertCrz(FPL.alt) : "35000";
 	var departureID = FPL.dep.aptid;
-	var departureLLA = this.lib.convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
+	var departureLLA = spx.lib.convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
 	var destinationID = FPL.dst.aptid;
-	var destinationLLA = this.lib.convertCoords(FPL.dst.lat, FPL.dst.lon, FPL.dst.elev);
+	var destinationLLA = spx.lib.convertCoords(FPL.dst.lat, FPL.dst.lon, FPL.dst.elev);
 	var title = departureID + " to " + destinationID;
 	var descr = title + " - route created by SkyVector and SkyPlanX";
-	var departurePosition = FPL.dep.rwy ? this.lib.convertRwy(FPL.dep.rwy) : "";
+	var departurePosition = FPL.dep.rwy ? spx.lib.convertRwy(FPL.dep.rwy) : "";
 	var departureName = FPL.dep.name;
 	var destinationName = FPL.dst.name;
 	var appVersionMajor = "10";
@@ -52,7 +51,7 @@ spx.generatePLN = function() {
 	var values = [title, "IFR", "HighAlt", cruisingAlt, departureID, departureLLA, destinationID, destinationLLA, descr, departurePosition, departureName, destinationName];
 
 	for (var i=0; i<tags.length; i++) {
-		xml += this.xml.createTag(tags[i], values[i]);
+		xml += spx.xml.createTag(tags[i], values[i]);
 	}
 
 	xml += "<AppVersion>\n<AppVersionMajor>10</AppVersionMajor>\n<AppVersionBuild>61472</AppVersionBuild>\n</AppVersion>\n\n";
@@ -74,7 +73,7 @@ spx.generatePLN = function() {
 	rte.push([FPL.route[FPL.route.length-1].ident, FPL.route[FPL.route.length-1].lat, FPL.route[FPL.route.length-1].lon, FPL.route[FPL.route.length-1].elev]);
 
 	for (var i=0; i<rte.length; i++) {
-		xml += this.xml.createWaypoint(rte[i]);
+		xml += spx.xml.createWaypoint(rte[i]);
 	}
 
 	xml += "</FlightPlan.FlightPlan>\n</SimBase.Document>\n";
@@ -198,10 +197,11 @@ spx.xml.createWaypoint = function(a) {
 	var elev = a[3] || "0.0";
 	var position = spx.lib.convertCoords(a[1], a[2], elev);
 	var wpt = "<ATCWaypoint id=\"" + name + "\">\n";
+    var createTag = spx.xml.createTag;
 
-	wpt += this.createTag("ATCWaypointType", type);
-	wpt += (this.createTag("WorldPosition", position) + "<ICAO>\n");
-	wpt += (this.createTag("ICAOIdent", name) + "</ICAO>\n</ATCWaypoint>\n\n");
+	wpt += createTag("ATCWaypointType", type);
+	wpt += (createTag("WorldPosition", position) + "<ICAO>\n");
+	wpt += (createTag("ICAOIdent", name) + "</ICAO>\n</ATCWaypoint>\n\n");
 
 	return wpt;
 };
