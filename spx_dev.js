@@ -4,6 +4,7 @@ window.spx = {};
 spx.timer = setInterval(function() {
     var target = document.getElementsByClassName("svfpl_toolbar")[0];
     if (target) {
+        console.log(this);
         this.appendButton();
         clearInterval(this.timer);
     }
@@ -100,13 +101,13 @@ spx.lib.convertCrz = function(fl) {
 		var alt = fl + "00";
 		return alt;
 	}
-}
+};
 
 // Removes preceding letters in runway name
 spx.lib.convertRwy = function(rwy) {
 	rwy = rwy.replace("RW", "");
 	return rwy;
-}
+};
 
 /* Converts raw coordinates to format used in PLN file
    type: 0 - lon, 1 - lat */
@@ -147,7 +148,7 @@ spx.lib.convertPoint = function(point, type) {
 	var a = h + d + "° " + m + "' " + s + "\"";
 
 	return a;
-}
+};
 
 // Converts an elevation value to the format used in the PLN file
 spx.lib.convertElev = function(alt) {
@@ -162,7 +163,7 @@ spx.lib.convertElev = function(alt) {
 	a += (n + "." + d + "0");
 
 	return a;
-}
+};
 
 // Converts a set of coordinates to PLN format
 spx.lib.convertCoords = function(lat, lon, elev) {
@@ -171,7 +172,7 @@ spx.lib.convertCoords = function(lat, lon, elev) {
 	elev = this.convertElev(elev);
 
 	return lat + "," + lon + "," + elev;
-}
+};
 
 spx.lib.getType = function(wpt) {
 	var type;
@@ -181,14 +182,14 @@ spx.lib.getType = function(wpt) {
 	else type = "Intersection";
 
 	return type;
-}
+};
 
 spx.xml = {};
 
 // Creates an XML tag
 spx.xml.createTag = function(name, content) {
 	return "<" + name + ">" + content +  "</" + name + ">\n";
-}
+};
 
 // Creates waypoint tag
 spx.xml.createWaypoint = function(a) {
@@ -203,4 +204,4 @@ spx.xml.createWaypoint = function(a) {
 	wpt += (this.createTag("ICAOIdent", name) + "</ICAO>\n</ATCWaypoint>\n\n");
 
 	return wpt;
-}
+};
