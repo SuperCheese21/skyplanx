@@ -20,13 +20,11 @@ spx.ui = {};
     var timer = setInterval(function() {
         var targets = [
             $,
-            document.getElementsByClassName("svfpl_toolbar")[0],
-            document.getElementById("chart")
-        ]
-        var test = targets.every(function(t) {
+            document.getElementsByClassName("svfpl_toolbar")[0]
+        ];
+        if (targets.every(function(t) {
             return t;
-        });
-        if (test) {
+        })) {
             spx.init();
             clearInterval(timer);
         }
@@ -41,29 +39,59 @@ spx.init = function() {
     spx.ui.toolbarIcon = $("<a>")
         .addClass("svfpl_iconlinkbtn")
         .attr("title", "Export to Flight Sim")
-        .click(spx.generatePLN)
+        .click(spx.gen.fsx)
         .append( $("<span>").addClass("fa fa-plane"))
         .insertAfter( $(".svfpl_iconlinkbtn").eq(3));
 
-    spx.ui.modal = $("<div>")
-        .addClass("svfpl_shareform")
+    spx.ui.menu = $("<div>")
+        .addClass("tppMenu")
         .css({
-            "top": "74px",
-            "left": "79px",
-            "position": "absolute"
+            "top": "130px",
+            "left": "225px"
         })
-        .append(
-            $("<h1>")
-                .addClass("sv sv_sharepanel")
-                .text("Export to Flight Sim")
+        .append( $("<table>")
+            .addClass("tppMenu")
+            .append( $("<tr>")
+                .addClass("tppMenu")
+                .append( $("<th>")
+                    .addClass("tppMenu")
+                    .text("Export To...")
+                )
+        ,   $("<tr>")
+                .addClass("tppMenu")
+                .append( $("<td>")
+                    .addClass("tppMenu gefs")
+                    .text("GEFS-Online")
+                )
+        ,   $("<tr>")
+                .addClass("tppMenu")
+                .append( $("<td>")
+                    .addClass("tppMenu pln")
+                    .text("FSX/P3D")
+                )
+        ,   $("<tr>")
+                .addClass("tppMenu")
+                .append( $("<td>")
+                    .addClass("tppMenu qw757")
+                    .text("QualityWings 757")
+                )
+        ,   $("<tr>")
+                .addClass("tppMenu")
+                .append( $("<td>")
+                    .addClass("tppMenu asa")
+                    .text("Aerosoft Airbus")
+                )
+            )
         )
-        .appendTo(chart);
+        .appendTo("body");
 
-    $(".svfpl_switch").css("margin", "0px 0px 0px 111px") // decreases margin-left of slider div to make room for new icon
+    $(".svfpl_switch").css("margin", "0px 0px 0px 111px"); // decreases margin-left of slider div to make room for new icon
 };
 
+spx.gen = {};
+
 // Builds and exports a PLN file for FSX
-spx.generatePLN = function() {
+spx.gen.fsx = function() {
 	var FPL = SkyVector.data.FPL;
 
 	var cruisingAlt = FPL.alt ? spx.lib.convertCrz(FPL.alt) : "35000";
