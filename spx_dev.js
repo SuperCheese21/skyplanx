@@ -1,28 +1,65 @@
+// ==UserScript==
+// @name SkyPlanX dev
+// @description This extension (by Ethan Shields) allows you to export routes to formats compatible for GEFS and FSX.
+// @match https://*.skyvector.com/*
+// @require https://code.jquery.com/jquery-3.1.0.min.js
+// @run-at document-end
+// @version 0.2.1
+// @grant none
+// ==/UserScript==
+
+// Copyright (c) 2016 Ethan Shields.  All Rights Reserved.
+console.log("Copyright (c) 2016 Ethan Shields.  All Rights Reserved.");
+
 window.spx = {};
 
+spx.ui = {};
+
 // Ensures content runs after page is loaded
-spx.timer = setInterval(function() {
-    var target = document.getElementsByClassName("svfpl_toolbar")[0];
-    if (target) {
-        spx.appendButton();
-        clearInterval(spx.timer);
-    }
-}, 100);
+(function() {
+    var timer = setInterval(function() {
+        var targets = [
+            $,
+            document.getElementsByClassName("svfpl_toolbar")[0],
+            document.getElementById("chart")
+        ]
+        var test = targets.every(function(t) {
+            return t;
+        });
+        if (test) {
+            spx.init();
+            clearInterval(timer);
+        }
+    }, 100);
+})();
 
-// Adds button to toolbar
-spx.appendButton = function() {
-	var toolbarIcon = document.createElement("a");
-	toolbarIcon.className = "svfpl_iconlinkbtn";
-	toolbarIcon.title = "Export to Flight Sim";
-	toolbarIcon.onclick = spx.generatePLN;
+// Appends button and modal to DOM
+spx.init = function() {
+    var toolbar = $(".svfpl_toolbar")[0];
+    var chart = $("#chart");
 
-	var icon = document.createElement("span");
-	icon.className = "fa fa-plane";
-	toolbarIcon.appendChild(icon);
+    spx.ui.toolbarIcon = $("<a>")
+        .addClass("svfpl_iconlinkbtn")
+        .attr("title", "Export to Flight Sim")
+        .click(spx.generatePLN)
+        .append( $("<span>").addClass("fa fa-plane"))
+        .insertAfter( $(".svfpl_iconlinkbtn").eq(3));
 
-	var target = document.getElementsByClassName("svfpl_toolbar")[0];
-	target.childNodes[4].style.margin = "0px 0px 0px 111px";
-	target.insertBefore(toolbarIcon, target.childNodes[4]);
+    spx.ui.modal = $("<div>")
+        .addClass("svfpl_shareform")
+        .css({
+            "top": "74px",
+            "left": "79px",
+            "position": "absolute"
+        })
+        .append(
+            $("<h1>")
+                .addClass("sv sv_sharepanel")
+                .text("Export to Flight Sim")
+        )
+        .appendTo(chart);
+
+    $(".svfpl_switch").css("margin", "0px 0px 0px 111px") // decreases margin-left of slider div to make room for new icon
 };
 
 // Builds and exports a PLN file for FSX
