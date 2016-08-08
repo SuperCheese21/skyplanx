@@ -67,25 +67,33 @@
         .appendTo("body");
 });
 
-window.spx = {};
 
-spx.ui = {};
-spx.gen = {};
-spx.lib = {};
-spx.xml = {};
+window.spx = {
+    formatsList: ["fsx", "gefs", "qw", "asa", "as16"],
+    gen: {},
+    global: {},
+    lib: {},
+    ui: {}
+};
+
+spx.formatsList.forEach(function(f) {
+    spx.gen[f] = {
+        lib: {}
+    }
+})
 
 // Builds and exports a PLN file for FSX
-spx.gen.fsx = function() {
+spx.gen.fsx.build = function() {
 	var FPL = SkyVector.data.FPL;
 
-	var cruisingAlt = FPL.alt ? spx.lib.convertCrz(FPL.alt) : "35000";
+	var cruisingAlt = FPL.alt ? spx.gen.fsx.lib.convertCrz(FPL.alt) : "35000";
 	var departureID = FPL.dep.aptid;
-	var departureLLA = spx.lib.convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
+	var departureLLA = spx.gen.fsx.lib.convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
 	var destinationID = FPL.dst.aptid;
-	var destinationLLA = spx.lib.convertCoords(FPL.dst.lat, FPL.dst.lon, FPL.dst.elev);
+	var destinationLLA = spx.gen.fsx.lib.convertCoords(FPL.dst.lat, FPL.dst.lon, FPL.dst.elev);
 	var title = departureID + " to " + destinationID;
 	var descr = title + " - route created by SkyVector and SkyPlanX";
-	var departurePosition = FPL.dep.rwy ? spx.lib.convertRwy(FPL.dep.rwy) : "";
+	var departurePosition = FPL.dep.rwy ? spx.gen.fsx.lib.convertRwy(FPL.dep.rwy) : "";
 	var departureName = FPL.dep.name;
 	var destinationName = FPL.dst.name;
 	var appVersionMajor = "10";
@@ -100,7 +108,7 @@ spx.gen.fsx = function() {
 	var values = [title, "IFR", "HighAlt", cruisingAlt, departureID, departureLLA, destinationID, destinationLLA, descr, departurePosition, departureName, destinationName];
 
 	for (var i=0; i<tags.length; i++) {
-		xml += spx.xml.createTag(tags[i], values[i]);
+		xml += spx.gen.fsx.lib.createTag(tags[i], values[i]);
 	}
 
 	xml += "<AppVersion>\n<AppVersionMajor>10</AppVersionMajor>\n<AppVersionBuild>61472</AppVersionBuild>\n</AppVersion>\n\n";
@@ -122,7 +130,7 @@ spx.gen.fsx = function() {
 	rte.push([FPL.route[FPL.route.length-1].ident, FPL.route[FPL.route.length-1].lat, FPL.route[FPL.route.length-1].lon, FPL.route[FPL.route.length-1].elev]);
 
 	for (var i=0; i<rte.length; i++) {
-		xml += spx.xml.createWaypoint(rte[i]);
+		xml += spx.gen.fsx.lib.createWaypoint(rte[i]);
 	}
 
 	xml += "</FlightPlan.FlightPlan>\n</SimBase.Document>\n";
@@ -140,8 +148,17 @@ spx.gen.fsx = function() {
 	e.dispatchEvent(click);
 };
 
+// Converts a set of coordinates to PLN format
+spx.gen.fsx.lib.convertCoords = function(lat, lon, elev) {
+	lat = this.convertPoint(lat, 0);
+	lon = this.convertPoint(lon, 1);
+	elev = this.convertElev(elev);
+
+	return lat + "," + lon + "," + elev;
+};
+
 // Converts flight level to altitude in feet
-spx.lib.convertCrz = function(fl) {
+spx.gen.fsx.lib.convertCrz = function(fl) {
 	if (fl.indexOf("FL") > -1) {
 		fl.replace("FL", "");
 		var alt = fl + "00";
@@ -149,15 +166,24 @@ spx.lib.convertCrz = function(fl) {
 	}
 };
 
-// Removes preceding letters in runway name
-spx.lib.convertRwy = function(rwy) {
-	rwy = rwy.replace("RW", "");
-	return rwy;
+// Converts an elevation value to the format used in the PLN file
+spx.gen.fsx.lib.convertElev = function(alt) {
+	if (typeof alt == "number") alt += "";
+	var a = Number(alt) >= 0 ? "+" : "-";
+	var s = alt.split(".");
+	var n = s[0];
+	var d = s[1];
+	for (var i=0; i<(6 - n.length); i++) {
+		a += "0";
+	}
+	a += (n + "." + d + "0");
+
+	return a;
 };
 
 /* Converts raw coordinates to format used in PLN file
    type: 0 - lon, 1 - lat */
-spx.lib.convertPoint = function(point, type) {
+spx.gen.fsx.lib.convertPoint = function(point, type) {
 	if (typeof point == "string") point = Number(point);
 	var h;
 	if (type) {
@@ -196,31 +222,35 @@ spx.lib.convertPoint = function(point, type) {
 	return a;
 };
 
-// Converts an elevation value to the format used in the PLN file
-spx.lib.convertElev = function(alt) {
-	if (typeof alt == "number") alt += "";
-	var a = Number(alt) >= 0 ? "+" : "-";
-	var s = alt.split(".");
-	var n = s[0];
-	var d = s[1];
-	for (var i=0; i<(6 - n.length); i++) {
-		a += "0";
-	}
-	a += (n + "." + d + "0");
-
-	return a;
+// Creates an XML tag
+spx.gen.fsx.lib.createTag = function(name, content) {
+	return "<" + name + ">" + content +  "</" + name + ">\n";
 };
 
-// Converts a set of coordinates to PLN format
-spx.lib.convertCoords = function(lat, lon, elev) {
-	lat = this.convertPoint(lat, 0);
-	lon = this.convertPoint(lon, 1);
-	elev = this.convertElev(elev);
+// Creates waypoint tag
+spx.gen.fsx.lib.createWaypoint = function(a) {
+	var name = a[0];
+	var type = spx.global.getType(name);
+	var elev = a[3] || "0.0";
+	var position = spx.gen.fsx.lib.convertCoords(a[1], a[2], elev);
+	var wpt = "<ATCWaypoint id=\"" + name + "\">\n";
+    var createTag = spx.gen.fsx.lib.createTag;
 
-	return lat + "," + lon + "," + elev;
+	wpt += createTag("ATCWaypointType", type);
+	wpt += (createTag("WorldPosition", position) + "<ICAO>\n");
+	wpt += (createTag("ICAOIdent", name) + "</ICAO>\n</ATCWaypoint>\n\n");
+
+	return wpt;
 };
 
-spx.lib.getType = function(wpt) {
+// Removes preceding letters in runway name
+spx.global.convertRwy = function(rwy) {
+	rwy = rwy.replace("RW", "");
+	return rwy;
+};
+
+// Uses the length of the waypoint to determine what type it is
+spx.global.getType = function(wpt) {
 	var type;
 	var l = wpt.length;
 	if (l <= 3) type = "VOR";
@@ -228,25 +258,4 @@ spx.lib.getType = function(wpt) {
 	else type = "Intersection";
 
 	return type;
-};
-
-// Creates an XML tag
-spx.xml.createTag = function(name, content) {
-	return "<" + name + ">" + content +  "</" + name + ">\n";
-};
-
-// Creates waypoint tag
-spx.xml.createWaypoint = function(a) {
-	var name = a[0];
-	var type = spx.lib.getType(name);
-	var elev = a[3] || "0.0";
-	var position = spx.lib.convertCoords(a[1], a[2], elev);
-	var wpt = "<ATCWaypoint id=\"" + name + "\">\n";
-    var createTag = spx.xml.createTag;
-
-	wpt += createTag("ATCWaypointType", type);
-	wpt += (createTag("WorldPosition", position) + "<ICAO>\n");
-	wpt += (createTag("ICAOIdent", name) + "</ICAO>\n</ATCWaypoint>\n\n");
-
-	return wpt;
 };
