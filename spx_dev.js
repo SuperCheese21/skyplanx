@@ -1,22 +1,5 @@
-// ==UserScript==
-// @name SkyPlanX dev
-// @description This extension (by Ethan Shields) allows you to export routes to formats compatible for GEFS and FSX.
-// @match https://*.skyvector.com/*
-// @require https://code.jquery.com/jquery-3.1.0.min.js
-// @run-at document-end
-// @version 0.2.1
-// @grant none
-// ==/UserScript==
-
-// Copyright (c) 2016 Ethan Shields.  All Rights Reserved.
-console.log("Copyright (c) 2016 Ethan Shields.  All Rights Reserved.");
-
-window.spx = {};
-
-spx.ui = {};
-
-// Ensures content runs after page is loaded
-(function() {
+// Initializes UI, ensures content runs after page is loaded
+(function(init) {
     var timer = setInterval(function() {
         var targets = [
             $,
@@ -25,16 +8,14 @@ spx.ui = {};
         if (targets.every(function(t) {
             return t;
         })) {
-            spx.init();
+            init();
             clearInterval(timer);
         }
     }, 100);
-})();
+})(function() {
+    $(".svfpl_switch").css("margin", "0px 0px 0px 111px"); // decreases margin-left of slider div to make room for new icon
 
-// Appends button and modal to DOM
-spx.init = function() {
-    var toolbar = $(".svfpl_toolbar")[0];
-    var chart = $("#chart");
+    // Appends button and modal to DOM
 
     spx.ui.toolbarIcon = $("<a>")
         .addClass("svfpl_iconlinkbtn")
@@ -84,11 +65,14 @@ spx.init = function() {
             )
         )
         .appendTo("body");
+});
 
-    $(".svfpl_switch").css("margin", "0px 0px 0px 111px"); // decreases margin-left of slider div to make room for new icon
-};
+window.spx = {};
 
+spx.ui = {};
 spx.gen = {};
+spx.lib = {};
+spx.xml = {};
 
 // Builds and exports a PLN file for FSX
 spx.gen.fsx = function() {
@@ -155,8 +139,6 @@ spx.gen.fsx = function() {
 	});
 	e.dispatchEvent(click);
 };
-
-spx.lib = {};
 
 // Converts flight level to altitude in feet
 spx.lib.convertCrz = function(fl) {
@@ -247,8 +229,6 @@ spx.lib.getType = function(wpt) {
 
 	return type;
 };
-
-spx.xml = {};
 
 // Creates an XML tag
 spx.xml.createTag = function(name, content) {
