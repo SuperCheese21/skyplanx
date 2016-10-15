@@ -334,3 +334,49 @@ spx.fsx.lib = {
     }
 
 }
+
+spx.xp.build = function() {
+    var FPL = SkyVector.data.FPL;
+    var rte = spx.global.formatRoute();
+
+    var title = rte[0][0] + " to " + rte[rte.length - 1][0];
+    var waypointCount = rte.length - 1;
+    var header = "I\n3 version\n1\n" + waypointCount + "\n\n";
+
+    var txt = header;
+    for (var i=0; i<waypointCount; i++) {
+        txt += spx.xp.lib.createWaypoint(rte[i]);
+    }
+
+    spx.global.export(title, txt, ".fms");
+}
+
+spx.xp.lib = {
+    createWaypoint: function(a) {
+        var FPL = SkyVector.data.FPL;
+        var ident = a[0];
+        var str = "";
+        var type = spx.global.getType(ident);
+        var typeCode = "";
+        if (type == "Airport") {
+            typeCode = "1";
+        } else if (type == "VOR") {
+            typeCode = "3";
+        } else if (type == "Intersection") {
+            typeCode = "11";
+        }
+        var alt = FPL.alt ? spx.global.convertCrz(FPL.alt) : 35000;
+        var lat = a[1];
+        var lon = a[2];
+        str = typeCode + " " + ident + " " + alt + " " + lat + " " + lon + "\n";
+        return str;
+    },
+
+    waypointTypes: {
+        "apt": "1",
+        "ndb": "2",
+        "vor": "3",
+        "fix": "11",
+        "llp": "28"
+    }
+}
