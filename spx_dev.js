@@ -183,6 +183,7 @@ spx.global.getType = function(wpt) {
 
 // Builds a PLN file for FSX
 spx.fsx.build = function() {
+    var FPL = SkyVector.data.FPL;
 	var cruisingAlt = FPL.alt ? spx.global.convertCrz(FPL.alt) : "35000";
 	var departureID = FPL.dep.aptid;
 	var departureLLA = spx.fsx.lib.convertCoords(FPL.dep.lat, FPL.dep.lon, FPL.dep.elev);
@@ -190,7 +191,7 @@ spx.fsx.build = function() {
 	var destinationLLA = spx.fsx.lib.convertCoords(FPL.dst.lat, FPL.dst.lon, FPL.dst.elev);
 	var title = departureID + " to " + destinationID;
 	var descr = title + " - route created by SkyVector and SkyPlanX";
-	var departurePosition = FPL.dep.rwy ? spx.fsx.lib.convertRwy(FPL.dep.rwy) : "";
+	var departurePosition = FPL.dep.rwy ? spx.global.convertRwy(FPL.dep.rwy) : "";
 	var departureName = FPL.dep.name;
 	var destinationName = FPL.dst.name;
 	var appVersionMajor = "10";
